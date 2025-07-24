@@ -2,6 +2,7 @@
 import { productsDummyData, userDummyData } from "@/assets/assets";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
+import { useUser } from "@clerk/nextjs"; // Add this import
 
 export const AppContext = createContext();
 
@@ -10,6 +11,7 @@ export const useAppContext = () => {
 }
 
 export const AppContextProvider = (props) => {
+    const { isLoaded, user } = useUser();
 
     const currency = process.env.NEXT_PUBLIC_CURRENCY
     const router = useRouter()
@@ -76,6 +78,17 @@ export const AppContextProvider = (props) => {
     useEffect(() => {
         fetchProductData()
     }, [])
+    useEffect(() => {
+        if (isLoaded) {
+            // Sync Clerk user to your context
+            setUserData(user ? {
+                id: user.id,
+                email: user.primaryEmailAddress?.emailAddress,
+                name: user.fullName,
+                imageUrl: user.imageUrl
+            } : null);
+        }
+    }, [isLoaded, user]);
 
     useEffect(() => {
         fetchUserData()
